@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Netflix Support Portal — Agent Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Barlow+Condensed:wght@300;600;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --netflix-red: #E50914;
+      --netflix-dark: #141414;
+      --netflix-charcoal: #1a1a1a;
+      --card-bg: rgba(255,255,255,0.04);
+      --border: rgba(229,9,20,0.18);
+      --text-primary: #ffffff;
+      --text-muted: rgba(255,255,255,0.4);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--netflix-dark);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Cinematic background */
+    .bg-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background:
+        radial-gradient(ellipse 70% 50% at 100% 0%, rgba(229,9,20,0.14) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 0% 100%, rgba(229,9,20,0.08) 0%, transparent 60%),
+        linear-gradient(180deg, #1a0000 0%, #141414 40%, #0a0a0a 100%);
+    }
+
+    .scanlines {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.08) 2px,
+        rgba(0,0,0,0.08) 4px
+      );
+      pointer-events: none;
+    }
+
+    .noise {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      opacity: 0.025;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 200px 200px;
+    }
+
+    /* Top nav */
+    nav {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 40px;
+      background: linear-gradient(180deg, rgba(20,20,20,0.98) 0%, transparent 100%);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .netflix-wordmark {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 36px;
+      color: var(--netflix-red);
+      letter-spacing: 0.02em;
+      line-height: 1;
+      text-shadow: 0 0 30px rgba(229,9,20,0.4);
+    }
+
+    .nav-divider {
+      width: 1px;
+      height: 22px;
+      background: rgba(255,255,255,0.15);
+    }
+
+    .nav-badge {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .nav-right {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Main */
+    main {
+      position: relative;
+      z-index: 5;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+    }
+
+    .login-wrapper {
+      display: flex;
+      gap: 80px;
+      align-items: center;
+      max-width: 960px;
+      width: 100%;
+    }
+
+    /* Left: Branding */
+    .brand-panel {
+      flex: 1;
+      animation: slideUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      opacity: 0;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .brand-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--netflix-red);
+      margin-bottom: 24px;
+    }
+
+    .brand-tag-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--netflix-red);
+      animation: pulse 1.8s ease infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.7); }
+    }
+
+    .brand-headline {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 58px;
+      font-weight: 800;
+      line-height: 0.95;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+      letter-spacing: -0.01em;
+    }
+
+    .brand-headline .outline {
+      -webkit-text-stroke: 1.5px rgba(255,255,255,0.3);
+      color: transparent;
+    }
+
+    .brand-headline .red {
+      color: var(--netflix-red);
+      display: block;
+    }
+
+    .brand-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.75;
+      max-width: 320px;
+      margin-bottom: 40px;
+    }
+
+    .feature-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .feature-list li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .feature-list li::before {
+      content: '';
+      width: 18px;
+      height: 2px;
+      background: var(--netflix-red);
+      flex-shrink: 0;
+    }
+
+    /* Right: Login card */
+    .login-card {
+      width: 370px;
+      flex-shrink: 0;
+      background: rgba(20, 20, 20, 0.9);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 44px 40px;
+      animation: slideUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.12s forwards;
+      opacity: 0;
+      position: relative;
+      box-shadow: 0 0 60px rgba(229,9,20,0.08), 0 40px 80px rgba(0,0,0,0.6);
+    }
+
+    .login-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--netflix-red);
+    }
+
+    .card-label {
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--netflix-red);
+      margin-bottom: 10px;
+    }
+
+    .card-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 32px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      margin-bottom: 6px;
+    }
+
+    .card-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 36px;
+    }
+
+    /* THE LOGIN BUTTON */
+    .btn-login {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      width: 100%;
+      padding: 17px 24px;
+      background: var(--netflix-red);
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      letter-spacing: 0.02em;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-login::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .btn-login:hover {
+      background: #f40612;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 30px rgba(229,9,20,0.45);
+    }
+
+    .btn-login:hover::before { opacity: 1; }
+
+    .btn-login:active { transform: translateY(0); }
+
+    .btn-icon {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    .btn-arrow {
+      margin-left: auto;
+      opacity: 0.7;
+      transition: transform 0.2s;
+    }
+
+    .btn-login:hover .btn-arrow {
+      transform: translateX(4px);
+      opacity: 1;
+    }
+
+    .help-text {
+      margin-top: 24px;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    .help-text a {
+      color: rgba(255,255,255,0.6);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .secure-badge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Footer */
+    footer {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 20px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.2);
+    }
+
+    @media (max-width: 768px) {
+      .login-wrapper { flex-direction: column; gap: 40px; }
+      .brand-panel { text-align: center; }
+      .brand-tag { justify-content: center; }
+      .brand-desc { margin: 0 auto 36px; }
+      .feature-list { align-items: center; }
+      .brand-headline { font-size: 44px; }
+      .login-card { width: 100%; max-width: 370px; border-radius: 4px; }
+      nav { padding: 14px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-layer"></div>
+  <div class="scanlines"></div>
+  <div class="noise"></div>
+
+  <nav>
+    <div class="nav-logo">
+      <div class="netflix-wordmark">NETFLIX</div>
+      <div class="nav-divider"></div>
+      <div class="nav-badge">Support Portal</div>
+    </div>
+    <div class="nav-right">Agent Access Only</div>
+  </nav>
+
+  <main>
+    <div class="login-wrapper">
+
+      <div class="brand-panel">
+        <div class="brand-tag">
+          <span class="brand-tag-dot"></span>
+          Live Agent Dashboard
+        </div>
+        <h1 class="brand-headline">
+          <span class="outline">Netflix</span>
+          <span class="red">Support</span>
+          Hub
+        </h1>
+        <p class="brand-desc">
+          Manage customer tickets, resolve issues, and collaborate with your team — all from your dedicated Netflix support workspace.
+        </p>
+        <ul class="feature-list">
+          <li>Real-time ticket queue</li>
+          <li>Workspace-restricted access</li>
+          <li>Secure SSO authentication</li>
+          <li>Powered by Freshservice</li>
+        </ul>
+      </div>
+
+      <div class="login-card">
+        <div class="card-label">Agent Portal</div>
+        <div class="card-title">Sign In</div>
+        <div class="card-subtitle">
+          Use your Netflix organization credentials to access your support dashboard.
+        </div>
+
+        <!--
+          IMPORTANT: Replace href with your actual Freshservice SSO URL.
+          Format: https://YOUR-DOMAIN.freshservice.com/login
+          With SSO policy: https://YOUR-DOMAIN.freshservice.com/login?sso_policy=POLICY_ID
+        -->
+        <a href="https://testott.freshservice.com/login" class="btn-login">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+            <polyline points="10 17 15 12 10 7"/>
+            <line x1="15" y1="12" x2="3" y2="12"/>
+          </svg>
+          Login with Netflix SSO
+          <svg class="btn-arrow btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </a>
+
+        <div class="help-text">
+          Having trouble? Contact your <a href="#">IT administrator</a>
+        </div>
+
+        <div class="secure-badge">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.5">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          Secured by Freshworks SSO
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer>
+    &copy; 2025 Netflix Support Portal &nbsp;·&nbsp; Internal Agent Use Only &nbsp;·&nbsp; Powered by Freshservice
+  </footer>
+
+</body>
+</html>
